@@ -12,7 +12,3 @@ body {
   font-size: 1.5em;
   padding-bottom: 30px;
 };
-
-.player-turn, .turn-count {
-  font-weight: bold;
-};
