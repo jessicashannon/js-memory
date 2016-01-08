@@ -1,9 +1,13 @@
 var $tableTarget = $(".table-target");
 var $square = $("");
 var colors = ["pink", "orange", "yellow", "green", "blue", "purple"];
-var icons = ["fort-awesome", "motorcycle", "lightning", "leaf", "star", "heart", "tree", "coffee", "diamond", "sun-o", "cloud", "cubes", "eye"];
+var icons = ["fort-awesome", "motorcycle", "leaf", "star", "heart", "tree", "coffee", "diamond", "sun-o", "cloud", "cubes", "eye"];
+var clickCount = 0;
+var turnCount = 0;
 
-var randomIcon = icons[Math.floor(Math.random() * icons.length)];
+function randomFrom(array){
+  return array[Math.floor(Math.random() * array.length)];
+};
 
 // This dynamically creates the board.
 function renderTableHTML(x, y){
@@ -22,51 +26,36 @@ function renderTableHTML(x, y){
     $tableTarget.html(table);
   };
 
-renderTableHTML(4,5);
+renderTableHTML(4,4);
 $square = $(".square");
 
-<i class='fa fa-" + randomIcon + " fa-muted fa-5x' style='display:none'></i>
-
-for each square
-Create a new Square object
-  object.index = 2x4
-  object.class = $class
-  object.icon = icon
-  object.color = color
-
-//
-// function pinkMotorcycle(){
-//   $test = $(".row-2.column-3.fa");
-//   $test.hide();
-//   $test.append("<i class='fa fa-motorcycle fa-pink'></i>");
-//
-// };
-
-
-// var Card = {
-//   //
-// };
-// Find the size of the board, divide by 2 (10)
-// Pick 10 unique icons, assign each twice to a random index
-// When you click a square, it asks what its card is, then shows it
-
-
-
-// Iteratively assign squares to board object?
-
-
-
-
-
-
-// Start with an array or object representing the board
-// Randomly assign pairs of icons to the board
-// When one is clicked, show it
-
-// TODO: can they be there all the time hidden?
-
-function takeTurn(){
-  $(this).;
+function addRandomIcon(){
+  $(this).children().after("<i class='icon fa fa-" + randomFrom(icons) + " fa-4x fa-" + randomFrom(colors) + "'>");
+  $(this).find('.icon').hide();
 };
 
-$square.click(this, takeTurn);
+$square.each(addRandomIcon);
+
+// Now the board is all set up.
+
+function toggleIcon(){
+  var $face = $(this).find('.icon');
+  var $back = $(this).find('.fa-square-o');
+  $face.show();
+  $back.hide();
+  window.setTimeout(function(){
+    $face.fadeOut(300, function(){
+        $back.fadeIn();
+    });
+  }, 3000);
+};
+
+function takeATurn(){
+  toggleIcon();
+  clickCount += 1;
+  if(clickCount == 2){
+    turnCount += 1;
+  }
+};
+
+$square.click(toggleIcons);
