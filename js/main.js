@@ -1,9 +1,18 @@
 var $tableTarget = $(".table-target");
 var $square = $("");
-var colors = ["pink", "orange", "yellow", "green", "blue", "purple"];
+var colors = ["pink", "orange", "yellow", "green", "blue", "purple", "teal", "light-pink", "light-purple", "periwinkle"];
 var icons = ["fort-awesome", "motorcycle", "leaf", "star", "heart", "tree", "coffee", "diamond", "sun-o", "cloud", "cubes", "eye"];
 var clickCount = 0;
 var turnCount = 0;
+var x = 4;
+var y = 4;
+
+function removeFromArray(array, item){
+  var index = array.indexOf(item);
+  if (index > -1) {
+    array.splice(index, 1);
+  };
+};
 
 function randomFrom(array){
   return array[Math.floor(Math.random() * array.length)];
@@ -26,23 +35,46 @@ function renderTableHTML(x, y){
     $tableTarget.html(table);
   };
 
-renderTableHTML(4,4);
+renderTableHTML( x, y );
 $square = $(".square");
 
+function randomColoredIcon(){
+  var icon = randomFrom(icons);
+  var color = randomFrom(colors);
+  removeFromArray(icons, icon);
+  return "<i class='icon fa fa-" + icon + " fa-4x fa-" + color + "'>"
+};
+
+var iconArray = function(){
+  var array = [];
+  for( var i = 0; i < (x*y/2); i++ ){
+    array.push(randomColoredIcon());
+  };
+  array = $.merge(array, array)
+  return array;
+}();
+
 function addRandomIcon(){
-  $(this).children().after("<i class='icon fa fa-" + randomFrom(icons) + " fa-4x fa-" + randomFrom(colors) + "'>");
+  var temp = randomFrom(iconArray);
+  $(this).children().after(temp);
   $(this).find('.icon').hide();
+  removeFromArray(iconArray, temp);
 };
 
 $square.each(addRandomIcon);
 
 // Now the board is all set up.
 
-function toggleIcon(){
-  var $face = $(this).find('.icon');
-  var $back = $(this).find('.fa-square-o');
+function showIcon(el){             // Flips a card
+  var $face = $(el).find('.icon');
+  var $back = $(el).find('.fa-square-o');
   $face.show();
   $back.hide();
+};
+
+function hideIcon(el){
+  var $face = $(el).find('.icon');
+  var $back = $(el).find('.fa-square-o');
   window.setTimeout(function(){
     $face.fadeOut(300, function(){
         $back.fadeIn();
@@ -50,12 +82,41 @@ function toggleIcon(){
   }, 3000);
 };
 
+var counter = 0;
+
 function takeATurn(){
-  toggleIcon();
-  clickCount += 1;
-  if(clickCount == 2){
-    turnCount += 1;
+  if(counter == 0){
+    counter ++;
+    showIcon(this);
+    $(this).addClass("clicked");
   }
+  else if(counter == 1){
+    showIcon(this);
+    $(this).addClass("clicked");
+    var $pair = $(document).find('.clicked .icon');
+    var matches = $pair[0].className.split(" ").filter(function(n) { // intersection of sets
+        return $pair[1].className.split(" ").indexOf(n) != -1
+      });
+    console.log(matches);
+    if(matches.length == 4){
+      console.log("Win!");
+    }
+    else{
+      console.log("No win yet!");
+      hideIcon($(document).find('.clicked'))
+    };
+  };
 };
 
-$square.click(toggleIcons);
+
+$square.click(takeATurn);
+//
+// When you click a square
+//   If counter is 0, ++ counter: One square clicked!
+//   - Show that square
+//   If counter is 1
+//   - Show that square
+//   - Find both visible squares and compare them
+//   - If they are the same, make them unclickable!
+//   - If they are not the same, wait 3 sec and flip them back around.
+//   - Increment turn count.
