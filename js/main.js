@@ -2,8 +2,8 @@ var $tableTarget = $(".table-target");
 var $square = $("");
 var colors = ["pink", "orange", "yellow", "green", "blue", "purple", "teal", "light-pink", "light-purple", "periwinkle"];
 var icons = ["fort-awesome", "motorcycle", "leaf", "star", "heart", "tree", "coffee", "diamond", "sun-o", "cloud", "cubes", "eye"];
-var clickCount = 0;
-var turnCount = 0;
+var counter = 0;
+var turn = 0;
 var x = 4;
 var y = 4;
 
@@ -42,7 +42,7 @@ function randomColoredIcon(){
   var icon = randomFrom(icons);
   var color = randomFrom(colors);
   removeFromArray(icons, icon);
-  return "<i class='icon fa fa-" + icon + " fa-4x fa-" + color + "'>"
+  return "<i class='icon fa fa-" + icon + " fa-4x fa-" + color + "' data-icon='" + icon + " " + color + "'>"
 };
 
 var iconArray = function(){
@@ -72,51 +72,78 @@ function showIcon(el){             // Flips a card
   $back.hide();
 };
 
-function hideIcon(el){
+function hideIcon(el, callback){
   var $face = $(el).find('.icon');
   var $back = $(el).find('.fa-square-o');
   window.setTimeout(function(){
-    $face.fadeOut(300, function(){
-        $back.fadeIn();
-    });
+    $face.hide();
+    $back.show();
+    callback();
   }, 3000);
 };
 
-var counter = 0;
+function turnCard(el){
+  counter ++;
+  showIcon(el);
+  $(el).addClass("clicked");
+};
+
+function cardIsClickable(){
+  return ($(this).attr('data-state') !== 'frozen');
+};
+
+function cardsMatch(){
+  var $pair = $(document).find('.clicked .icon');
+  var match = $($pair[0]).attr('data-icon') == $($pair[1]).attr('data-icon');
+  return match;
+  }
+
+function updateTurnCount(){
+  turn ++;
+  $('.turn-count').html(turn);
+}
+
+function checkSquareForWin(el){
+  if ( $(el).attr('data-state') == 'frozen' ){
+    return true
+  }
+  else{
+    return false
+  }
+}
+
+function checkBoardForWin(){
+  var win = [];
+  $.each( $square, function(index, element){
+    if( checkSquareForWin(element) ){
+      win.push(element)
+    }
+  })
+  if(win.length == $square.length){
+    $('.message').html('<h1>Congratulations, you win!<h1>')
+  }
+}
 
 function takeATurn(){
-  if(counter == 0){
-    counter ++;
-    showIcon(this);
-    $(this).addClass("clicked");
+  if( !cardIsClickable() ) { return }
+  if( counter == 0 ){
+    turnCard(this);
   }
-  else if(counter == 1){
-    showIcon(this);
-    $(this).addClass("clicked");
-    var $pair = $(document).find('.clicked .icon');
-    var matches = $pair[0].className.split(" ").filter(function(n) { // intersection of sets
-        return $pair[1].className.split(" ").indexOf(n) != -1
-      });
-    console.log(matches);
-    if(matches.length == 4){
-      console.log("Win!");
-    }
+  else if( counter == 1){
+    turnCard(this);
+    updateTurnCount();
+    if(cardsMatch()){
+      $(document).find('.clicked').attr('data-state', 'frozen').removeClass('clicked')
+      checkBoardForWin();
+      counter = 0;
+      }
     else{
-      console.log("No win yet!");
-      hideIcon($(document).find('.clicked'))
+      hideIcon($(document).find('.clicked'), function(){
+        counter = 0;
+      })
+      $(document).find('.clicked').removeClass('clicked')
     };
   };
 };
 
-
 $square.click(takeATurn);
-//
-// When you click a square
-//   If counter is 0, ++ counter: One square clicked!
-//   - Show that square
-//   If counter is 1
-//   - Show that square
-//   - Find both visible squares and compare them
-//   - If they are the same, make them unclickable!
-//   - If they are not the same, wait 3 sec and flip them back around.
-//   - Increment turn count.
