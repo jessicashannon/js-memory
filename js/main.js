@@ -1,8 +1,14 @@
 var $tableTarget = $(".table-target");
 var $square = $("");
-var colors = ["pink", "orange", "yellow", "green", "blue", "purple", "teal", "light-pink", "light-purple", "periwinkle"];
-var icons = ["fort-awesome", "motorcycle", "leaf", "star", "heart", "tree", "coffee", "diamond", "sun-o", "cloud", "cubes", "eye"];
-var clickCount = 0;
+var colors = [
+  "pink", "orange", "yellow", "green", "blue", "purple", "teal", "light-pink",
+  "light-purple", "periwinkle"
+];
+var icons = [
+  "fort-awesome", "motorcycle", "leaf", "star", "heart", "tree", "coffee",
+  "diamond", "sun-o", "cloud", "cubes", "eye"
+];
+var counter = 0;
 var turnCount = 0;
 var x = 4;
 var y = 4;
@@ -42,7 +48,7 @@ function randomColoredIcon(){
   var icon = randomFrom(icons);
   var color = randomFrom(colors);
   removeFromArray(icons, icon);
-  return "<i class='icon fa fa-" + icon + " fa-4x fa-" + color + "'>"
+  return "<i class='icon fa fa-" + icon + " fa-4x fa-" + color + "' data-key='" + icon + color + "'>"
 };
 
 var iconArray = function(){
@@ -70,6 +76,7 @@ function showIcon(el){             // Flips a card
   var $back = $(el).find('.fa-square-o');
   $face.show();
   $back.hide();
+  $(el).attr('data-visibility', 'visible');
 };
 
 function hideIcon(el){
@@ -78,36 +85,49 @@ function hideIcon(el){
   window.setTimeout(function(){
     $face.fadeOut(300, function(){
         $back.fadeIn();
+        $(el).removeAttr('data-visibility');
+        $(el).removeAttr('data-state');
     });
-  }, 3000);
+  }, 1000);
 };
 
-var counter = 0;
+function itMatches(pair){
+  $first = $(pair[0]).find('.icon')
+  $second = $(pair[1]).find('.icon')
+  return $first.data('key') === $second.data('key');
+  }
+
+function isClickable(){
+  return $(document).find('[data-state="inPlay"]').length < 2
+}
+
+function showTurnCount(){
+  return $('.turnCount').text(turnCount);
+}
 
 function takeATurn(){
-  if(counter == 0){
+  if (!isClickable()){
+    return null;
+  };
+  $(this).attr('data-state','inPlay');
+  if (counter == 0){
     counter ++;
+    turnCount ++;
+    showTurnCount();
     showIcon(this);
-    $(this).addClass("clicked");
   }
-  else if(counter == 1){
+  else if (counter == 1){
+    counter --;
     showIcon(this);
-    $(this).addClass("clicked");
-    var $pair = $(document).find('.clicked .icon');
-    var matches = $pair[0].className.split(" ").filter(function(n) { // intersection of sets
-        return $pair[1].className.split(" ").indexOf(n) != -1
-      });
-    console.log(matches);
-    if(matches.length == 4){
-      console.log("Win!");
+    var $pair = $(document).find('[data-state="inPlay"]');
+    if (itMatches($pair)){
+      $pair.removeAttr('data-state');
     }
-    else{
-      console.log("No win yet!");
-      hideIcon($(document).find('.clicked'))
+    else {
+      hideIcon($pair);
     };
   };
 };
-
 
 $square.click(takeATurn);
 //
